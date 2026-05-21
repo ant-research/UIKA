@@ -1,0 +1,41 @@
+base_config: ./configs/uika_base.yaml
+
+inference:
+    checkpoint: ./model_zoo/uika/uika.safetensors
+    image_input: null
+    motion_dir: null
+    output_dir: ./outputs/inference
+
+    source_size: 512
+    render_size: 512
+    render_fps: 25
+    render_chunk_size: 0
+
+    compile: false
+
+    save_video: true
+    save_frames: true
+
+    camera_path: orbit  # motion
+    orbit:
+        radius_x: 0.35
+        radius_y: 0.8
+        center: [0.0, 0.0, 0.7]
+        look_at: [0.0, 0.0, 0.0]
+        axis: z
+        up: y
+
+    matting:
+        weights: ./model_zoo/tools/stylematte_synth.pt
+
+    head_detection:
+        weights: ./model_zoo/tools/vgg_heads_l.trcd
+        expand_scale: 1.5
+        confidence_threshold: 0.5
+
+    debug:
+        ref_grid: false
+        video_grid: false
+        include_driving_rgb: false
+        vis_motion: false
+        blend_motion: false

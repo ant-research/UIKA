@@ -1,0 +1,117 @@
+method: fuvt
+max_img_per_gpu: 48
+max_batch: 16
+image_num: [1, 16]
+other_views: 1
+num_workers: 16
+log_steps: 200
+
+experiment:
+    type: ${method}
+    seed: 42
+    parent: ${method}
+    child: base
+
+model:
+    # Used by the dynamic loader to keep sampled image sizes aligned with the FUVT patch size.
+    encoder_type: "dinov3_fusion"
+
+data:
+    subsets:
+        -   name: mv_video_head
+            root_dirs: "./train_data/nersemble_v2/export"
+            meta_path:
+                train: "./train_data/nersemble_v2/label/train_ids.json"
+                val: "./train_data/nersemble_v2/label/val_ids.json"
+            sample_rate: 1.0
+
+        -   name: mv_video_head
+            root_dirs: "./train_data/vfhq/export"
+            meta_path:
+                train: "./train_data/vfhq/label/train_ids.json"
+                val: "./train_data/vfhq/label/val_ids.json"
+            sample_rate: 1.0
+
+        -   name: mv_video_head
+            root_dirs: "./train_data/hdtf/export"
+            meta_path:
+                train: "./train_data/hdtf/label/train_ids.json"
+                val: "./train_data/hdtf/label/val_ids.json"
+            sample_rate: 1.0
+
+        -   name: mv_video_head
+            root_dirs: "./train_data/synth_mv/export"
+            meta_path:
+                train: "./train_data/synth_mv/label/train_ids.json"
+                val: "./train_data/synth_mv/label/val_ids.json"
+            sample_rate: 1.0
+    dataset:
+        sample_side_views: ${other_views}
+        source_image_res: 512
+        render_image:
+            low: 512
+            high: 512
+            region: null
+        repeat_num: 1
+        aspect_standard: 1.0
+        enlarge_ratio: [0.8, 1.2]
+    loader:
+        max_img_per_gpu: ${max_img_per_gpu}
+        max_batch: ${max_batch}
+        image_num: ${image_num}
+        num_workers: ${num_workers}
+        shuffle: true
+        pin_memory: true
+        persistent_workers: false
+        drop_last: true
+
+train:
+    mixed_precision: bf16  # REPLACE THIS BASED ON GPU TYPE
+    find_unused_parameters: false
+    loss:
+        pixel_weight: 1.0
+        tv_weight: 0.001
+    optim:
+        lr: 4e-4
+        weight_decay: 0.05
+        beta1: 0.9
+        beta2: 0.95
+        clip_grad_norm: 1.0
+    scheduler:
+        type: cosine
+        warmup_real_iters: 3000
+    batch_size: 4  # REPLACE THIS (PER GPU)
+    accum_steps: 1  # REPLACE THIS
+    epochs: 1000  # REPLACE THIS
+    debug_global_steps: null
+    resume: ""
+
+val:
+    batch_size: 2
+    global_step_period: ${log_steps}
+    debug_batches: 10
+
+saver:
+    auto_resume: true
+    load_model: null
+    checkpoint_root: ./exps/checkpoints
+    checkpoint_global_steps: 1000
+    checkpoint_keep_level: 5
+
+logger:
+    stream_level: WARNING
+    log_level: INFO
+    log_root: ./exps/logs
+    tracker_root: ./exps/trackers
+    img_log_root: ./exps/img_logs
+    enable_profiler: false
+    trackers:
+        - tensorboard
+    image_monitor:
+        train_global_steps: ${log_steps}
+        samples_per_log: 4
+
+compile:
+    suppress_errors: true
+    print_specializations: true
+    disable: true
