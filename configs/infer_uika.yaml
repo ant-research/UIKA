@@ -16,7 +16,7 @@ inference:
     save_video: true
     save_frames: true
 
-    camera_path: orbit  # motion
+    camera_path: motion  # orbit
     orbit:
         radius_x: 0.35
         radius_y: 0.8
