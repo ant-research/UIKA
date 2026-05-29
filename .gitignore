@@ -1,0 +1,11 @@
+*.o
+*.so
+*.pyc
+*.pyo
+__pycache__/
+*.egg-info/
+
+/outputs*
+/model_zoo*
+/assets/motion*
+/assets/ref*
